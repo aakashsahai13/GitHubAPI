@@ -11,6 +11,10 @@ class PullRequestAPI extends AbstractAPI
     {
         $api = "GET /repos/$user/$repo/pulls";
         $prs = $this->doAPIRequest($api);
+        if ($prs == false) {
+            return array();
+        }
+
         $prsEntities = array();
         foreach ($prs as $pr) {
             $prsEntities[] = $this->createEntity(__NAMESPACE__ . '\PullRequest', $pr);
