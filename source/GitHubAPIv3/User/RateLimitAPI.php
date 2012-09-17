@@ -6,23 +6,14 @@ use GitHubAPIv3\AbstractAPI;
 
 class RateLimitAPI extends AbstractAPI
 {
-    protected static $rateLimit = array();
-
-    public static function setRateLimitFromHeader($remaining, $limit, $rateLimitScope = null)
-    {
-        if ($rateLimitScope == null) {
-            // @todo
-            return;
-        }
-        if (is_string($rateLimitScope)) {
-            self::$rateLimit[$rateLimitScope] = array('remaining' => $remaining, 'limit' => $limit, 'fromHeader' => true);
-        }
-    }
 
     public function getRateLimit($which = null)
     {
-        if (isset($this->accessToken) && isset(self::$rateLimit[$this->accessToken])) {
-            return self::$rateLimit[$this->accessToken];
+        // get data from API data if it exists
+        if (isset($this->accessToken) && isset(self::$apiData['rate'][$this->accessToken])) {
+            $data = self::$apiData['rate'][$this->accessToken];
+            $data['fromHeader'] = true;
+            return $data;
         }
 
         $api = 'GET /rate_limit';

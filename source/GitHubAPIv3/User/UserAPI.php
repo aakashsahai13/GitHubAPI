@@ -30,7 +30,7 @@ class UserAPI extends AbstractAPI
 
         $api = 'GET /user';
         $userData = $this->doAPIRequest($api);
-        return $this->createEntity('GitHubAPIv3\AuthenticatedUser', $userData);
+        return $this->createEntity(__NAMESPACE__ . '\AuthenticatedUser', $userData);
     }
 
     /**

@@ -22,7 +22,7 @@ class IssueAPI extends AbstractAPI
 
         $entities = array();
         foreach ($issues as $issue) {
-            $entities[] = $this->createEntity('GitHubAPIv3\Issue', $issue);
+            $entities[] = $this->createEntity(__NAMESPACE__ . '\Issue', $issue);
         }
         return $entities;
     }
@@ -53,7 +53,7 @@ class IssueAPI extends AbstractAPI
 
         $entities = array();
         foreach ($issues as $issue) {
-            $entities[] = $this->createEntity('GitHubAPIv3\Issue', $issue);
+            $entities[] = $this->createEntity(__NAMESPACE__ . '\Issue', $issue);
         }
         return $entities;
     }
@@ -72,7 +72,7 @@ class IssueAPI extends AbstractAPI
         if (!$issue) {
             return false;
         }
-        return $this->createEntity('GitHubAPIv3\Issue', $issue);
+        return $this->createEntity(__NAMESPACE__ . '\Issue', $issue);
     }
 
     /**
@@ -83,7 +83,7 @@ class IssueAPI extends AbstractAPI
     public function createIssue($user, $repo, array $data)
     {
         $data = $this->doAPIRequest("POST /repos/$user/$repo/issues", $data);
-        return $this->createEntity('GitHubAPIv3\Issue', $data);
+        return $this->createEntity(__NAMESPACE__ . '\Issue', $data);
     }
 
     /**
@@ -122,7 +122,7 @@ class IssueAPI extends AbstractAPI
     public function editIssue($user, $repo, $number, array $data)
     {
         $data = $this->doAPIRequest("PATCH /repos/$user/$repo/issues/$number", $data);
-        return $this->createEntity('GitHubAPIv3\Issue', $data);
+        return $this->createEntity(__NAMESPACE__ . '\Issue', $data);
     }
 
 }

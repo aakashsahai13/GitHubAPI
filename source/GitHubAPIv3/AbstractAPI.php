@@ -4,9 +4,10 @@ namespace GitHubAPIv3;
 
 abstract class AbstractAPI
 {
+    protected static $apiData = array('rate' => array());
+
     /** @var string */
     protected $accessToken = null;
-
 
     protected $lastRequestMetadata = null;
     protected $lastRequestBody = null;
@@ -63,8 +64,8 @@ abstract class AbstractAPI
                     $rlLimit = substr($header, 18);
                 }
             }
-            if (isset($rlRemaining) && isset($rlLimit)) {
-                RateLimitAPI::setRateLimitFromHeader($rlRemaining, $rlLimit, $this->accessToken);
+            if (isset($rlRemaining) && isset($rlLimit) && isset($this->accessToken)) {
+                self::$apiData['rate'][$this->accessToken] = array('remaining' => $rlRemaining, 'limit' => $rlLimit);
             }
         }
 
@@ -82,9 +83,17 @@ abstract class AbstractAPI
         return $entity;
     }
 
-    protected function synchronizeEntity(AbstractEntity $entity, $data)
+    protected function synchronizeEntity(AbstractEntity $entity, array $data)
     {
         $ro = new \ReflectionObject($entity);
+
+        if ($ro->hasProperty('propertyEntityMap')) {
+            $rMapProp = $ro->getProperty('propertyEntityMap');
+            $rMapProp->setAccessible(true);
+            $entityMap = $rMapProp->getValue($entity);
+        } else {
+            $entityMap = array();
+        }
 
         foreach ($data as $dName => $dValue) {
             $dName = lcfirst(str_replace(' ' , '', ucwords(str_replace('_', ' ', $dName))));
@@ -92,7 +101,15 @@ abstract class AbstractAPI
             if ($ro->hasProperty($dName)) {
                 $prop = $ro->getProperty($dName);
                 $prop->setAccessible(true);
-                $prop->setValue($entity, $dValue);
+
+                if (isset($entityMap[$dName]) && is_array($dValue)) {
+                    $subEntityClass = $entityMap[$dName];
+                    $subEntity = new $subEntityClass;
+                    $this->synchronizeEntity($subEntity, $dValue);
+                    $prop->setValue($entity, $subEntity);
+                } else {
+                    $prop->setValue($entity, $dValue);
+                }
             }
         }
     }

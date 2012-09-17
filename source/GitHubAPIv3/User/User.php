@@ -4,13 +4,10 @@ namespace GitHubAPIv3\User;
 
 use GitHubAPIv3\AbstractEntity;
 
-class User extends AbstractEntity
+class User extends BasicUser
 {
-    protected $login;
-    protected $id;
-    protected $avatarUrl;
-    protected $gravatarId;
-    protected $url;
+
+
     protected $name;
     protected $company;
     protected $blog;
@@ -25,31 +22,6 @@ class User extends AbstractEntity
     protected $htmlUrl;
     protected $createdAt;
     protected $type;
-
-    public function getLogin()
-    {
-        return $this->login;
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getAvatarUrl()
-    {
-        return $this->avatarUrl;
-    }
-
-    public function getGravatarId()
-    {
-        return $this->gravatarId;
-    }
-
-    public function getUrl()
-    {
-        return $this->url;
-    }
 
     public function getName()
     {
