@@ -7,9 +7,18 @@ use GitHubAPIv3\AbstractAPI;
 class PullRequestAPI extends AbstractAPI
 {
 
-    public function getPullRequests($user, $repo)
+    public function getPullRequests($user, $repo, array $parameters = array())
     {
+        // @todo
+        $parameters = $this->processParameters(
+            array('page' => null, 'per_page' => null, 'state' => array('open', 'closed')),
+            $parameters
+        );
+        
         $api = "GET /repos/$user/$repo/pulls";
+        if ($parameters) {
+            $api .= '?' . http_build_query($parameters);
+        }
         $prs = $this->doAPIRequest($api);
         if ($prs == false) {
             return array();

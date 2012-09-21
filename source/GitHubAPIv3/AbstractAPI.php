@@ -7,15 +7,39 @@ abstract class AbstractAPI
     protected static $apiData = array('rate' => array());
 
     /** @var string */
-    protected $accessToken = null;
+    protected $authentication = null;
 
     protected $lastRequestMetadata = null;
     protected $lastRequestBody = null;
     protected $lastRequestBodyDecoded = null;
 
-    public function __construct($accessToken = null)
+    /**
+     * 
+     */
+    public function __construct($authentication = null)
     {
-        $this->accessToken = $accessToken;
+        if (is_string($authentication) && strlen($authentication) == 40) {
+            $this->authentication = $authentication;
+        } elseif (func_num_args() == 2) {
+            $this->authentication = array(
+                'username' => func_get_arg(0),
+                'password' => func_get_arg(1) 
+            );
+        } elseif (is_array($authentication) && isset($authentication['username']) && isset($authentication['password'])) {
+            $this->authentication = $authentication;
+        } elseif ($authentication !== null) {
+            throw new \InvalidArgumentException('Authentication should either be an access token from github, or an array("username"=>xxx,"password"=>xxx)');
+        }
+    }
+
+    public function getLastRequestMetadata()
+    {
+        return $this->lastRequestMetadata;
+    }
+    
+    public function getLastRequestBody()
+    {
+        return $this->lastRequestBody;
     }
 
     protected function doAPIRequest($api, array $content = array())
@@ -30,8 +54,10 @@ abstract class AbstractAPI
         );
 
         // add in token
-        if ($this->accessToken) {
-            $httpOptions['header'] .= 'Authorization: token ' . $this->accessToken . "\r\n";
+        if (is_string($this->authentication)) {
+            $httpOptions['header'] .= 'Authorization: token ' . $this->authentication . "\r\n";
+        } elseif (is_array($this->authentication)) {
+            $httpOptions['header'] .= 'Authorization: Basic ' . base64_encode($this->authentication['username'] . ':' . $this->authentication['password']) . "\r\n";
         }
 
         if ($content) {
@@ -39,7 +65,10 @@ abstract class AbstractAPI
         }
 
         // set context and get contents
-        $context = stream_context_create(array('http' => $httpOptions));
+        $context = stream_context_create(array(
+            'http' => $httpOptions,
+            'ssl' => array('verify_peer' => true)
+        ));
 
         // reset last request data
         $this->lastRequestMessage = $this->lastRequestMetadata = null;
@@ -126,6 +155,17 @@ abstract class AbstractAPI
             $aProperties[$property] = $entity->{'get' . $name}();
         }
         return $aProperties;
+    }
+
+    protected function processParameters($validParameters, $parameters)
+    {
+        $cleanParameters = array();
+        foreach ($parameters as $n => $v) {
+            if (array_key_exists($n, $validParameters)) {
+                $cleanParameters[$n] = $v;
+            }
+        }
+        return $cleanParameters;
     }
 
 }
