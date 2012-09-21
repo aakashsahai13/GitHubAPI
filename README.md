@@ -45,45 +45,53 @@ $api = new PullRequestAPI('1234567890abcdefghij1234567890abcdefghij');
 
 API object
 
-    use GitHubAPIv3\PullRequest\PullRequestAPI;
-    $api = new PullRequestAPI($token);
+```php
+use GitHubAPIv3\PullRequest\PullRequestAPI;
+$api = new PullRequestAPI($token);
+```
 
 List Pull Requests - http://developer.github.com/v3/pulls/#list-pull-requests
 
-    $prs = $api->getPullRequests('zendframework', 'zf2', array('state' => 'closed', 'per_page' => 100));
+```php
+$prs = $api->getPullRequests('zendframework', 'zf2', array('state' => 'closed', 'per_page' => 100));
+```
     
 #### Entities
     
 The PullRequest Entity:
 
-    class PullRequest extends AbstractEntity
-    {
-        public function getUrl();
-        public function getHtmlUrl();
-        public function getDiffUrl();
-        public function getPatchUrl();
-        public function getNumber();
-        public function getState();
-        public function getTitle();
-        public function getBody()
-        public function getCreatedAt()
-        public function getUpdatedAt()
-        public function getClosedAt()
-        public function getMergedAt()
+```php
+namespace GitHubAPIv3\PullRequest;
+
+class PullRequest extends AbstractEntity
+{
+    public function getUrl();
+    public function getHtmlUrl();
+    public function getDiffUrl();
+    public function getPatchUrl();
+    public function getNumber();
+    public function getState();
+    public function getTitle();
+    public function getBody()
+    public function getCreatedAt()
+    public function getUpdatedAt()
+    public function getClosedAt()
+    public function getMergedAt()
         
-        /**
-         * @return \GitHubAPIv3\User\BasicUser
-         */
-        public function getUser();
+    /**
+     * @return \GitHubAPIv3\User\BasicUser
+     */
+    public function getUser();
 
-        /**
-         * @return \GitHubAPIv3\User\BasicUser
-         */
-        public function getAssignee();
+    /**
+     * @return \GitHubAPIv3\User\BasicUser
+     */
+    public function getAssignee();
 
-        /**
-         * @return \GitHubAPIv3\Issue\Milestone
-         */
-        public function getMilestone();
-    }
+    /**
+     * @return \GitHubAPIv3\Issue\Milestone
+     */
+    public function getMilestone();
+}
+```
 
