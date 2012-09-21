@@ -17,23 +17,27 @@ back, the same Entity objects can be used, and the setter methods on
 these objects will expose which information GitHub accepts back.
 
 
-### Authorization
+### Authentication
 
 All API constructors take authentication in one of the following
 formats:
 
-* Basic Authentication
+#### Basic Authentication
 
-    use GitHubAPIv3\PullRequest\PullRequestAPI;
-    $api = new PullRequestAPI('uname', 'password');
-    // or
-    $api = new PullRequestAPI(array('username' => 'uname', 'password' => 'pword'));
+```php
+use GitHubAPIv3\PullRequest\PullRequestAPI;
+$api = new PullRequestAPI('uname', 'password');
+// or
+$api = new PullRequestAPI(array('username' => 'uname', 'password' => 'pword'));
+```
     
-* OAuth Token Authentication
+#### OAuth Token Authentication
 
-    use GitHubAPIv3\PullRequest\PullRequestAPI;
-    // must be 40 char token from github
-    $api = new PullRequestAPI('1234567890abcdefghij1234567890abcdefghij'); 
+```php
+use GitHubAPIv3\PullRequest\PullRequestAPI;
+// must be 40 char token from github
+$api = new PullRequestAPI('1234567890abcdefghij1234567890abcdefghij'); 
+```
     
 ### Pull Reqests
 
