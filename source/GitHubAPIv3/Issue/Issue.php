@@ -6,6 +6,12 @@ use GitHubAPIv3\AbstractEntity;
 
 class Issue extends AbstractEntity
 {
+    protected static $propertyEntityMap = array(
+        'user'        => 'GitHubAPIv3\User\BasicUser',
+        'assignee'    => 'GitHubAPIv3\User\BasicUser',
+        'milestone'   => 'GitHubAPIv3\Issue\Milestone',
+        'pullRequest' => 'GitHubAPIv3\PullRequest\PullRequest',
+    );
 
     protected $url;
     protected $htmlUrl;
@@ -43,6 +49,10 @@ class Issue extends AbstractEntity
         return $this->state;
     }
 
+    /**
+     * @param string $state open|closed
+     * @return Issue
+     */
     public function setState($state)
     {
         $this->updatedProperties['state'] = true;
@@ -55,6 +65,10 @@ class Issue extends AbstractEntity
         return $this->title;
     }
 
+    /**
+     * @param string $title
+     * @return Issue
+     */
     public function setTitle($title)
     {
         $this->updatedProperties['title'] = true;
@@ -67,6 +81,10 @@ class Issue extends AbstractEntity
         return $this->body;
     }
 
+    /**
+     * @param $body
+     * @return Issue
+     */
     public function setBody($body)
     {
         $this->updatedProperties['body'] = true;
@@ -87,7 +105,14 @@ class Issue extends AbstractEntity
     public function setLabels($labels)
     {
         $this->updatedProperties['labels'] = true;
-        $this->labels = (is_array($labels)) ? implode(',', $labels) : $this->labels = $labels;
+        if (is_string($labels)) {
+            $this->labels = explode(',', $labels);
+        } elseif (is_array($labels)) {
+            $this->labels = $labels;
+        } else {
+            throw new \InvalidArgumentException('Labels must be a comma delimited string or an array of strings');
+        }
+
         return $this;
     }
 

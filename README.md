@@ -95,3 +95,19 @@ class PullRequest extends AbstractEntity
 }
 ```
 
+### Markdown
+
+#### APIs
+
+API object
+
+```php
+use GitHubAPIv3\Markdown\MarkdownAPI;
+$api = new MarkdownAPI($token);
+```
+
+Render Markdown - http://developer.github.com/v3/markdown/
+
+```php
+$renderedMarkdown = $api->renderMarkdown('Hello world github/linguist#1 **cool**, and #1!');
+```

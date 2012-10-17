@@ -9,7 +9,6 @@ class PullRequestAPI extends AbstractAPI
 
     public function getPullRequests($user, $repo, array $parameters = array())
     {
-        // @todo
         $parameters = $this->processParameters(
             array('page' => null, 'per_page' => null, 'state' => array('open', 'closed')),
             $parameters
@@ -26,7 +25,7 @@ class PullRequestAPI extends AbstractAPI
 
         $prsEntities = array();
         foreach ($prs as $pr) {
-            $prsEntities[] = $this->createEntity(__NAMESPACE__ . '\PullRequest', $pr);
+            $prsEntities[] = PullRequest::factory($pr);
         }
         return $prsEntities;
     }

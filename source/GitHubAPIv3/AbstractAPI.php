@@ -4,17 +4,44 @@ namespace GitHubAPIv3;
 
 abstract class AbstractAPI
 {
-    protected static $apiData = array('rate' => array());
+
+    /** @var array */
+    protected static $apiData = array(
+        'rate' => array(),
+        'last_links' => array(
+            'first' => null,
+            'prev' => null,
+            'next' => null,
+            'last' => null
+        ),
+        'last_request' => array(
+            'api' => null,
+            'content' => null
+        ),
+        'last_response' => array(
+            'metadata' => null,
+            'content' => null
+        ),
+        'calls' => 0
+    );
 
     /** @var string */
     protected $authentication = null;
 
-    protected $lastRequestMetadata = null;
-    protected $lastRequestBody = null;
-    protected $lastRequestBodyDecoded = null;
+    /**
+     * @return array
+     */
+    public static function getApiData()
+    {
+        return self::$apiData;
+    }
 
     /**
-     * 
+     * @signature __construct(string $authentication) 40 byte auth code
+     * @signature __construct(string $username, string $password) Github Username, Github Password
+     * @signature __construct(array $authentication) array('username' => 'xx', 'password' => xxx)
+     *
+     * @param string|array $authentication
      */
     public function __construct($authentication = null)
     {
@@ -32,18 +59,12 @@ abstract class AbstractAPI
         }
     }
 
-    public function getLastRequestMetadata()
-    {
-        return $this->lastRequestMetadata;
-    }
-    
-    public function getLastRequestBody()
-    {
-        return $this->lastRequestBody;
-    }
-
     protected function doAPIRequest($api, array $content = array())
     {
+        self::$apiData['last_request']['api'] = $api;
+        self::$apiData['last_request']['content'] = $content;
+        self::$apiData['calls']++;
+
         list($method, $urlPath) = explode(' ', $api, 2);
 
         // set method and json header
@@ -51,6 +72,7 @@ abstract class AbstractAPI
             'method' => $method,
             'header' => "Accept: application/json\r\nContent-type: application/json\r\n",
             'ignore_errors' => true,
+            'follow_location' => false
         );
 
         // add in token
@@ -71,90 +93,56 @@ abstract class AbstractAPI
         ));
 
         // reset last request data
-        $this->lastRequestMessage = $this->lastRequestMetadata = null;
 
         // is it the full url? or the one from the documentation?
         $urlPath = (strpos($urlPath, 'http') !== false) ? $urlPath : 'https://api.github.com' . $urlPath;
 
         $fh = fopen($urlPath, 'r', false, $context);
-        $this->lastRequestBody = stream_get_contents($fh);
-        $this->lastRequestMetadata = stream_get_meta_data($fh);
+        self::$apiData['last_response']['metadata'] = $metadata = stream_get_meta_data($fh);
+        self::$apiData['last_response']['content'] = $content = stream_get_contents($fh);
         fclose($fh);
 
-        $this->lastRequestBodyDecoded = json_decode($this->lastRequestBody, true);
+        self::$apiData['last_links'] = array('first' => null, 'prev' => null, 'next' => null, 'last' => null);
 
         // get rate limit information
         if (get_class($this) !== __NAMESPACE__ . '\RateLimitAPI') {
-            foreach ($this->lastRequestMetadata['wrapper_data'] as $index => $header) {
+            foreach ($metadata['wrapper_data'] as $header) {
                 if (strpos($header, 'X-RateLimit-Remaining:') === 0) {
                     $rlRemaining = substr($header, 23);
                 }
                 if (strpos($header, 'X-RateLimit-Limit') === 0) {
                     $rlLimit = substr($header, 18);
                 }
+                if (stripos($header, 'content-type: application/json') === 0) {
+                    $decodedContent = json_decode($content, true);
+                }
+                if (strpos($header, 'Link:') === 0) {
+                    $links = substr($header, 6);
+                    $links = explode(', ', $links);
+                    foreach ($links as $link) {
+                        $matches = array();
+                        if (preg_match('#<(.*)>; rel="(\w+)"#', $link, $matches)) {
+                            self::$apiData['last_links'][$matches[2]] = $matches[1];
+                        }
+                    }
+                }
             }
-            if (isset($rlRemaining) && isset($rlLimit) && isset($this->accessToken)) {
-                self::$apiData['rate'][$this->accessToken] = array('remaining' => $rlRemaining, 'limit' => $rlLimit);
+            if (isset($rlRemaining) && isset($rlLimit) && isset($this->authentication) && is_string($this->authentication)) {
+                self::$apiData['rate'][$this->authentication] = array('remaining' => $rlRemaining, 'limit' => $rlLimit);
             }
         }
 
-        if (substr($this->lastRequestMetadata['wrapper_data'][0], 9, 3) !== '200') {
+        // any 200 level code is fine
+        if (substr($metadata['wrapper_data'][0], 9, 2) !== '20') {
             return false;
         }
 
-        return $this->lastRequestBodyDecoded;
-    }
-
-    protected function createEntity($type, $data)
-    {
-        $entity = new $type;
-        $this->synchronizeEntity($entity, $data);
-        return $entity;
-    }
-
-    protected function synchronizeEntity(AbstractEntity $entity, array $data)
-    {
-        $ro = new \ReflectionObject($entity);
-
-        if ($ro->hasProperty('propertyEntityMap')) {
-            $rMapProp = $ro->getProperty('propertyEntityMap');
-            $rMapProp->setAccessible(true);
-            $entityMap = $rMapProp->getValue($entity);
+        if (isset($decodedContent)) {
+            return $decodedContent;
         } else {
-            $entityMap = array();
+            return $content;
         }
 
-        foreach ($data as $dName => $dValue) {
-            $dName = lcfirst(str_replace(' ' , '', ucwords(str_replace('_', ' ', $dName))));
-
-            if ($ro->hasProperty($dName)) {
-                $prop = $ro->getProperty($dName);
-                $prop->setAccessible(true);
-
-                if (isset($entityMap[$dName]) && is_array($dValue)) {
-                    $subEntityClass = $entityMap[$dName];
-                    $subEntity = new $subEntityClass;
-                    $this->synchronizeEntity($subEntity, $dValue);
-                    $prop->setValue($entity, $subEntity);
-                } else {
-                    $prop->setValue($entity, $dValue);
-                }
-            }
-        }
-    }
-
-    protected function createArrayFromUpdatedProperties(AbstractEntity $entity)
-    {
-        $aProperties = array();
-        foreach ($entity->getUpdatedProperties() as $name) {
-            $property = preg_replace(
-                '/(^|[a-z])([A-Z])/',
-                '\\1_\\2',
-                $name
-            );
-            $aProperties[$property] = $entity->{'get' . $name}();
-        }
-        return $aProperties;
     }
 
     protected function processParameters($validParameters, $parameters)

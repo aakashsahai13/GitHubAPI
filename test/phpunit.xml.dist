@@ -1,0 +1,7 @@
+<phpunit bootstrap="phpunit-bootstrap.php" colors="true">
+    <testsuites>
+        <testsuite name="Zend Framework Test Suite">
+            <directory>./ZendTest</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
