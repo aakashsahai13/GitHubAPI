@@ -74,6 +74,22 @@ abstract class AbstractAPI
         }
     }
 
+    public static function getLastLinks()
+    {
+        return self::$apiData['last_links'];
+    }
+
+    public static function getLastPages()
+    {
+        $lastLinks = self::$apiData['last_links'];
+        $lastNums = array();
+        foreach ($lastLinks as $name => $uri) {
+            if ($uri && preg_match('/page=(\d)/', $uri, $matches)) {
+
+            }
+        }
+    }
+
     protected function doAPIRequest($api, array $content = array())
     {
         self::$apiData['last_request']['api'] = $api;
