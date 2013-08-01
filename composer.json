@@ -1,0 +1,16 @@
+{
+    "name": "ralphschindler/githubapi",
+    "description": "An OO api and object model for GitHub's API",
+    "authors": [
+        {
+            "name": "Ralph Schindler",
+            "email": "ralph@ralphschindler.com",
+            "role": "developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "GitHubAPI": "source/"
+        }
+    }
+}

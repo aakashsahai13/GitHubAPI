@@ -19,7 +19,7 @@ class RepositoryAPI extends AbstractAPI
         }
         $repoEntities = array();
         foreach ($repos as $repo) {
-            $repoEntities[] = $this->createEntity(__NAMESPACE__ . '\Repository', $repo);
+            $repoEntities[] = Repository::createEntity($repo);
         }
         return $repoEntities;
     }

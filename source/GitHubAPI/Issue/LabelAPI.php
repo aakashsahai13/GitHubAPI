@@ -3,11 +3,13 @@
 namespace GitHubAPI\Issue;
 
 use GitHubAPI\AbstractAPI;
+use GitHubAPI\Exception;
 
 class LabelAPI extends AbstractAPI
 {
     public function getLabels($owner, $repo)
     {
+        /*
         $api = "GET /repos/$owner/$repo/labels";
         $labels = $this->doAPIRequest($api);
 
@@ -16,6 +18,7 @@ class LabelAPI extends AbstractAPI
             $labelEntities[] = $this->createEntity(__NAMESPACE__ . '\Label', $label);
         }
         return $labelEntities;
+        */
     }
 
     public function createLabel($owner, $repo, array $data)
@@ -25,14 +28,15 @@ class LabelAPI extends AbstractAPI
             throw new \RuntimeException(
                 'Could not create label',
                 null,
-                new \GitHubAPI\Exception\GitHubErrorsException($this->lastResponseBodyDecoded['message'], $this->lastResponseBodyDecoded['errors'])
+                new Exception\GitHubErrorsException(self::$apiData['lastResponseBodyDecoded']['message'], self::$apiData['lastResponseBodyDecoded']['errors'])
             );
         }
-        return $this->createEntity(__NAMESPACE__ . '\Label', $data);
+        return Label::createEntity($data);
     }
 
     public function createLabelWithEntity($owner, $repo, Label $label)
     {
+        /*
         $data = $this->createArrayFromUpdatedProperties($label);
         $data = $this->doAPIRequest("POST /repos/$owner/$repo/labels", $data);
         if ($data === false) {
@@ -43,15 +47,18 @@ class LabelAPI extends AbstractAPI
             );
         }
         $this->synchronizeEntity($label, $data);
+        */
     }
 
     public function deleteLabel($owner, $repo, $name)
     {
+        /*
         $data = $this->doAPIRequest("DELETE /repos/$owner/$repo/labels/$name");
         if ($data !== false) { // sucess will return an empty string
             return true;
         }
         return false;
+        */
     }
 
 }

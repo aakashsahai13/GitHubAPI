@@ -5,28 +5,20 @@ namespace GitHubAPI;
 class GitHubAPI extends AbstractAPI
 {
 
-    /**
-     * @return User\RateLimitAPI
-     */
-    public function getRateLimitApi()
+    public function __get($apiName)
     {
-        return new User\RateLimitAPI($this->authentication);
-    }
-
-    /**
-     * @return User\UserAPI
-     */
-    public function getUserApi()
-    {
-        return new User\UserAPI($this->authentication);
-    }
-
-    /**
-     * @return Gist\GistAPI
-     */
-    public function getGistApi()
-    {
-        return new Gist\GistAPI($this->authentication);
+        switch (strtolower($apiName)) {
+            case 'search':
+                $api = new Search\SearchAPI;
+                break;
+            case 'user':
+                $api = new User\UserApi;
+                break;
+        }
+        
+        $api->authentication = $this->authentication;
+        $api->configuration = $this->configuration;
+        return $api;
     }
 
 }

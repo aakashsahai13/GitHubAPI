@@ -25,7 +25,7 @@ class UserAPI extends AbstractAPI
      * http://developer.github.com/v3/users/#get-the-authenticated-user
      * @return AuthenticatedUser
      */
-    public function getAuthenticatedUser()
+    public function AuthenticatedUser()
     {
         if (!$this->authentication) {
             throw new \RuntimeException('This API requires authentication');

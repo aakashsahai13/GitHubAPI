@@ -3,6 +3,7 @@
 namespace GitHubAPI\Issue;
 
 use GitHubAPI\AbstractAPI;
+use GitHubAPI\Exception;
 
 class IssueAPI extends AbstractAPI
 {
@@ -22,7 +23,7 @@ class IssueAPI extends AbstractAPI
 
         $entities = array();
         foreach ($issues as $issue) {
-            $entities[] = $this->createEntity(__NAMESPACE__ . '\Issue', $issue);
+            $entities[] = Issue::createEntity($issue);
         }
         return $entities;
     }
@@ -99,29 +100,31 @@ class IssueAPI extends AbstractAPI
             throw new \RuntimeException(
                 'Could not create issue',
                 null,
-                new \GitHubAPI\Exception\GitHubErrorsException($this->lastResponseBodyDecoded['message'], $this->lastResponseBodyDecoded['errors'])
+                new Exception\GitHubErrorsException(self::$apiData['lastResponseBodyDecoded']['message'], self::$apiData['lastResponseBodyDecoded']['errors'])
             );
         }
-        return $this->createEntity(__NAMESPACE__ . '\Issue', $data);
+        return Issue::createEntity($data);
     }
 
     /**
      * @param $owner
      * @param $repo
      * @param Issue $issue
+     * @return void
      */
     public function createIssueWithEntity($user, $repo, Issue $issue)
     {
-        $data = $this->createArrayFromUpdatedProperties($issue);
+        // $data = $this->createArrayFromUpdatedProperties($issue);
+        $data = $issue->getUpdatedPropertyValues();
         $data = $this->doAPIRequest("POST /repos/$user/$repo/issues", $data);
         if ($data === false) {
             throw new \RuntimeException(
                 'Could not create issue',
                 null,
-                new \GitHubAPI\Exception\GitHubErrorsException($this->lastResponseBodyDecoded['message'], $this->lastResponseBodyDecoded['errors'])
+                new Exception\GitHubErrorsException(self::$apiData['lastResponseBodyDecoded']['message'], self::$apiData['lastResponseBodyDecoded']['errors'])
             );
         }
-        $this->synchronizeEntity($issue, $data);
+        Issue::synchronizeEntity($issue, $data);
     }
 
     /**
@@ -130,6 +133,7 @@ class IssueAPI extends AbstractAPI
      */
     public function editIssueWithEntity(Issue $issue)
     {
+        /*
         $patchUrl = $issue->getUrl(); // issue has url embedded (if it already exists)
         if ($patchUrl == '') {
             throw new \RuntimeException(
@@ -139,6 +143,7 @@ class IssueAPI extends AbstractAPI
         $data = $this->createArrayFromUpdatedProperties($issue);
         $data = $this->doAPIRequest("PATCH $patchUrl", $data);
         $this->synchronizeEntity($issue, $data);
+        */
     }
 
     /**
@@ -149,8 +154,10 @@ class IssueAPI extends AbstractAPI
      */
     public function editIssue($user, $repo, $number, array $data)
     {
+        /*
         $data = $this->doAPIRequest("PATCH /repos/$user/$repo/issues/$number", $data);
         return $this->createEntity(__NAMESPACE__ . '\Issue', $data);
+        */
     }
 
 }

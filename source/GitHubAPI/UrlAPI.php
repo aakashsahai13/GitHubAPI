@@ -5,12 +5,12 @@ namespace GitHubAPI;
 class UrlAPI extends AbstractAPI
 {
     protected $url = null;
-    protected $entityType = null;
+    protected $originalApi = null;
 
-    public function __construct($url, $entityType = null)
+    public function __construct($url, $originalApi = null)
     {
         $this->url = $url;
-        $this->entityType = $entityType;
+        $this->originalApi = $originalApi;
     }
 
     public function getUrl()
@@ -18,23 +18,17 @@ class UrlAPI extends AbstractAPI
         return $this->url;
     }
 
-    public function getEntityType()
+    public function getOriginalApi()
     {
-        return $this->entityType;
+        return $this->originalApi;
     }
 
     public function call()
     {
         $list = $this->doAPIRequest('GET ' . $this->url);
-        if ($this->entityType) {
-            /** @var $type AbstractEntity (actually it's a string) */
-            $type = $this->entityType;
-            $entities = array();
-            foreach ($list as $data) {
-                $entities[] = $type::createEntity($data);
-            }
-            return $entities;
+        if (!$list) {
+            throw new \RuntimeException('Data was not returned by this url');
         }
-        return $list;
+        return $this->originalApi->getEntitiesFromData($list);
     }
 }

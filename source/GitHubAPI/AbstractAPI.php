@@ -15,6 +15,7 @@ abstract class AbstractAPI
             'last' => null
         ),
         'last_request' => array(
+            'headers' => null,
             'api' => null,
             'content' => null
         ),
@@ -27,6 +28,8 @@ abstract class AbstractAPI
 
     /** @var string */
     protected $authentication = null;
+    
+    protected $configuration = null;
 
     /**
      * @return array
@@ -43,10 +46,13 @@ abstract class AbstractAPI
      *
      * @param string|array $authentication
      */
-    public function __construct($authentication = null)
+    public function __construct($authentication = null, $configuration = null)
     {
         if ($authentication) {
             $this->setAuthentication($authentication);
+        }
+        if ($configuration) {
+            $this->setConfiguration($configuration);
         }
     }
 
@@ -73,6 +79,11 @@ abstract class AbstractAPI
             throw new \InvalidArgumentException('Authentication should either be an access token from github, or an array("username"=>xxx,"password"=>xxx)');
         }
     }
+    
+    public function setConfiguration($configuration)
+    {
+        $this->configuration = $configuration;
+    }
 
     public static function getLastLinks()
     {
@@ -98,20 +109,36 @@ abstract class AbstractAPI
 
         list($method, $urlPath) = explode(' ', $api, 2);
 
+        $headers = array(
+            'Accept' => 'application/vnd.github.full+json',
+            'Content-type' => 'application/json'
+        );
+        
+        // add in token
+        if (is_string($this->authentication)) {
+            $headers['Authorization'] = 'token ' . $this->authentication . "\r\n";
+        } elseif (is_array($this->authentication)) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->authentication['username'] . ':' . $this->authentication['password']) . "\r\n";
+        }
+        
+        if (isset($this->configuration['header']) && is_array($this->configuration['header'])) {
+            $headers = array_merge($headers, $this->configuration['header']);
+        }
+
+        $headerString = '';
+        foreach ($headers as $name => $value) {
+            $headerString .= $name . ': ' . $value . "\r\n";
+        }
+
+        self::$apiData['last_request']['headers'] = $headers;
+
         // set method and json header
         $httpOptions = array(
             'method' => $method,
-            'header' => "Accept: application/json\r\nContent-type: application/json\r\n",
+            'header' => $headerString,
             'ignore_errors' => true,
             'follow_location' => false
         );
-
-        // add in token
-        if (is_string($this->authentication)) {
-            $httpOptions['header'] .= 'Authorization: token ' . $this->authentication . "\r\n";
-        } elseif (is_array($this->authentication)) {
-            $httpOptions['header'] .= 'Authorization: Basic ' . base64_encode($this->authentication['username'] . ':' . $this->authentication['password']) . "\r\n";
-        }
 
         if ($content) {
             $httpOptions['content'] = json_encode($content);
@@ -185,6 +212,11 @@ abstract class AbstractAPI
             }
         }
         return $cleanParameters;
+    }
+    
+    protected function getEntitiesFromData($data)
+    {
+        throw new \RuntimeException('This method must be called from an Entity returning API');
     }
 
 }

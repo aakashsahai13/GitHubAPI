@@ -57,5 +57,14 @@ class BasicUser extends AbstractEntity
     {
         return $this->type;
     }
+    
+    public static function __set_state(array $state)
+    {
+        $basicUser = new self;
+        foreach ($state as $n => $v) {
+            $basicUser->{$n} = $v;
+        }
+        return $basicUser;
+    }
 
 }

@@ -52,8 +52,9 @@ class PageIterator extends AbstractAPI implements \Iterator
         } elseif (!isset($this->entities[$this->position]) && self::$apiData['last_links']['next'] === null) {
             return false;
         } else {
-            $urlApi = new UrlAPI(self::$apiData['last_links']['next'], $this->entityType);
+            $urlApi = new UrlAPI(self::$apiData['last_links']['next'], $this->api);
             $urlApi->authentication = $this->api->authentication; // get authentication
+            $urlApi->configuration = $this->api->configuration;
             $this->entities = array_merge($this->entities, $urlApi->call());
             $this->page++;
             return (isset($this->entities[$this->position]));

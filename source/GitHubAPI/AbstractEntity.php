@@ -14,7 +14,7 @@ abstract class AbstractEntity
         return $entity;
     }
 
-    protected static function synchronizeEntity(AbstractEntity $entity, array $data)
+    public static function synchronizeEntity(AbstractEntity $entity, array $data)
     {
         $ro = new \ReflectionObject($entity);
 

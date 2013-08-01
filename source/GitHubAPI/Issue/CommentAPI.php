@@ -14,7 +14,7 @@ class CommentAPI extends AbstractAPI
         }
         $commentEntities = array();
         foreach ($comments as $comment) {
-            $commentEntities[] = $this->createEntity(__NAMESPACE__ . '\Comment', $comment);
+            $commentEntities[] = Comment::createEntity($comment);
         }
         return $commentEntities;
     }

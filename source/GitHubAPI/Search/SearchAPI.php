@@ -3,31 +3,37 @@
 namespace GitHubAPI\Search;
 
 use GitHubAPI\AbstractAPI;
+use GitHubAPI\User\BasicUser;
 
 class SearchAPI extends AbstractAPI
 {
-
-
-    public function searchByEmail($email)
+    protected $entityRootPath = array('items');
+    
+    public function findUsers(array $parameters = array())
     {
-        $users = $this->doAPIRequest("GET /legacy/user/email/$email");
-        if ($users === false || $users === array()) {
-            return false;
+        $parameters = $this->processParameters(
+            array('q' => null, 'sort' => null, 'order' => array('desc', 'asc')),
+            $parameters
+        );
+        
+        $api = 'GET /search/users';
+        if ($parameters) {
+            $api .= '?' . http_build_query($parameters);
         }
-        return $this->createEntity('GitHubAPI\User\User', $users['user']);
+        $sus = $this->doAPIRequest($api);
+        if ($sus == false) {
+            return array();
+        }
+        
+        return $this->getEntitiesFromData($sus);
     }
-
-    public function searchUserByKeyword($keyword)
+    
+    protected function getEntitiesFromData($data)
     {
-        $users = $this->doAPIRequest("GET /legacy/user/search/$keyword");
-        if ($users === false || $users['users'] === array()) {
-            return false;
+        $userEntities = array();
+        foreach ($data['items'] as $su) {
+            $userEntities[] = BasicUser::createEntity($su);
         }
-        $entities = array();
-        foreach ($users['users'] as $user) {
-            $entities[] = $this->createEntity('GitHubAPI\User\User', $user);
-        }
-        return $entities;
+        return $userEntities;
     }
-
 }
